@@ -46,7 +46,8 @@ int parse_command(char **command)
         ret_val = 1;
         goto cleanup;
     }
-    if (asprintf(&full_path, "%s%s", BINARIES_PATH, *command) < sizeof(BINARIES_PATH))
+    if (access(argv[0], X_OK) == 0) goto run_proc;
+    if (asprintf(&full_path, "%s%s", BINARIES_PATH, argv[0]) < sizeof(BINARIES_PATH))
     {
         ret_val = -1;
         goto cleanup;
@@ -58,6 +59,7 @@ int parse_command(char **command)
     }
 
     argv[0] = full_path;
+run_proc:
     cpid = fork();
     if (cpid == -1)
     {
@@ -73,8 +75,6 @@ int parse_command(char **command)
         wait(NULL);
     }
 
-    // check if command exists
-    printf("%s", bin_name);
 cleanup:
     free(full_path);
     return ret_val;
