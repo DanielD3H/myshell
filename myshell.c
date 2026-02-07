@@ -8,6 +8,24 @@
 
 #include "consts.h"
 
+/**
+ * Function gets the array of args.
+ * returns the index of the parameter containing the redirection if found, else -1.
+*/
+int find_redirection(const char const **argv, int argc)
+{
+    int redirection_index = -1;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (NULL != strstr(argv[i], ">") || NULL != strstr(argv[i], "<"))
+        {
+            redirection_index = i;
+            break;
+        }
+    }
+    return redirection_index;
+}
+
 char **split_string(char *input, const char *delim, int *count)
 {
     int max_tokens = 10;
@@ -36,7 +54,7 @@ int parse_command(char **command)
 {
     char *full_path = NULL;
     int ret_val = 0;
-    int argc;
+    int argc, redirection_index;
     pid_t cpid;
     char **argv = split_string(*command, " ", &argc);
     char *bin_name = argv[0];
@@ -60,6 +78,7 @@ int parse_command(char **command)
 
     argv[0] = full_path;
 run_proc:
+    redirection_index = find_redirection(argv, argc);
     cpid = fork();
     if (cpid == -1)
     {
